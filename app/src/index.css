@@ -1,0 +1,63 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;900&display=swap');
+
+:root {
+  /* Branding Colors */
+  --accent-color: #48b8ac;
+
+  /* Dark Mode Palette */
+  --bg-page: #151a1f;
+  /* Very dark backing */
+  --bg-card: #2a343d;
+  /* Main User Color */
+  --bg-input: #1f272e;
+  /* Slightly darker for inputs */
+
+  /* Text */
+  --text-main: #ffffff;
+  --text-muted: #8b95a1;
+
+  /* UI Elements */
+  --border-radius: 16px;
+  --border-radius-sm: 8px;
+  --border-color: rgba(255, 255, 255, 0.1);
+  --shadow-lg: 0 10px 30px -5px rgba(0, 0, 0, 0.3);
+
+  --font-main: 'Roboto', sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-main);
+  background-color: var(--bg-page);
+  color: var(--text-main);
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+}
+
+/* Custom Scrollbar for dark theme */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-page);
+}
+
+::-webkit-scrollbar-thumb {
+  background: #3e4c59;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-color);
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+}
