@@ -16,20 +16,20 @@ export default function Controls({ previewRef, fileName }) {
 
                 // Settings to ensure correct export even if scaled on mobile
                 const options = {
-                    cacheBust: true,
-                    pixelRatio: 2, // 800x1000px output
+                    cacheBust: false,
+                    pixelRatio: 2,
                     width: 400,
                     height: 500,
                     style: {
-                        transform: 'none', // Reset any CSS scaling
+                        transform: 'none',
                         margin: '0',
-                        display: 'flex' // Ensure proper layout
+                        display: 'flex'
                     }
                 };
 
                 try {
-                    // Small delay for images to ready
-                    await new Promise(r => setTimeout(r, 100));
+                    // Increased delay for images to handle mobile resource constraints
+                    await new Promise(r => setTimeout(r, 500));
 
                     const dataUrl = await toPng(node, options);
 
@@ -49,8 +49,8 @@ export default function Controls({ previewRef, fileName }) {
                 console.log("Downloading Slide 1...");
                 if (refs.slide1) await downloadNode(refs.slide1, '_slide1');
 
-                // Increased delay between slides for mobile browsers
-                await new Promise(r => setTimeout(r, 2000));
+                // Generous delay between slides
+                await new Promise(r => setTimeout(r, 2500));
 
                 if (refs.slide2) {
                     console.log("Downloading Slide 2...");

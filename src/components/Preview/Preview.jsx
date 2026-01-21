@@ -59,7 +59,7 @@ const Preview = forwardRef(({ settings }, ref) => {
             </div>
 
             {/* Layer 2: Template Overlay (Gradient + Logo + Static Text) */}
-            <img src="/template_simple.png" style={overlayStyle} alt="" />
+            <img src="/template_simple.png" style={overlayStyle} alt="" crossOrigin="anonymous" />
 
             {/* Layer 3: Dynamic Text */}
             {/* "crece desde abajo, casi pegado al elemento EXN" */}
@@ -100,7 +100,7 @@ const Preview = forwardRef(({ settings }, ref) => {
             </div>
 
             {/* Overlay */}
-            <img src="/template_double_1.png" style={overlayStyle} alt="" />
+            <img src="/template_double_1.png" style={overlayStyle} alt="" crossOrigin="anonymous" />
 
             {/* Text - Same logic as Simple */}
             <div style={textLayerStyle}>
@@ -140,7 +140,7 @@ const Preview = forwardRef(({ settings }, ref) => {
             </div>
 
             {/* Overlay */}
-            <img src="/template_double_2.png" style={overlayStyle} alt="" />
+            <img src="/template_double_2.png" style={overlayStyle} alt="" crossOrigin="anonymous" />
 
             {/* Text */}
             <div style={{ ...textLayerStyle, padding: '40px', justifyContent: 'center', alignItems: 'center' }}>
