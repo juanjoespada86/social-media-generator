@@ -19,25 +19,9 @@ function App() {
   };
 
   return (
-    <div style={{
-      minHeight: '100vh',
-      display: 'flex',
-      flexDirection: 'column',
-      background: 'radial-gradient(circle at 50% 0%, #232b33 0%, var(--bg-page) 80%)'
-    }}>
+    <div className="app-container">
       {/* Header */}
-      <header style={{
-        padding: '20px 40px',
-        borderBottom: '1px solid var(--border-color)',
-        background: 'rgba(21, 26, 31, 0.8)',
-        backdropFilter: 'blur(10px)',
-        display: 'flex',
-        alignItems: 'center',
-        gap: '20px',
-        position: 'sticky',
-        top: 0,
-        zIndex: 100
-      }}>
+      <header className="app-header">
         <img src="/logo.png" alt="Logo" style={{ height: '40px' }} />
         <div>
           <h1 style={{ fontSize: '20px', fontWeight: '700', letterSpacing: '0.5px' }}>
@@ -48,40 +32,20 @@ function App() {
       </header>
 
       {/* Main Layout */}
-      <main style={{
-        flex: 1,
-        padding: '40px',
-        maxWidth: '1600px',
-        margin: '0 auto',
-        width: '100%',
-        display: 'grid',
-        gridTemplateColumns: 'minmax(400px, 1fr) 1.5fr', // Editor | Preview
-        gap: '60px',
-        alignItems: 'start'
-      }}>
+      <main className="app-main">
 
         {/* Editor Column */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', width: '100%' }}>
           <Editor settings={settings} updateSettings={updateSettings} />
         </div>
 
         {/* Preview Column */}
-        <div style={{
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          gap: '30px',
-          position: 'sticky',
-          top: '120px'
-        }}>
-          <div style={{
-            padding: '40px',
-            background: 'var(--bg-card)',
-            borderRadius: 'var(--border-radius)',
-            border: '1px solid var(--border-color)',
-            boxShadow: 'var(--shadow-lg)'
-          }}>
-            <Preview ref={previewRef} settings={settings} />
+        <div className="preview-section">
+          <div className="preview-card">
+            {/* Scaler handles mobile resizing without affecting 4:5 aspect ratio structure */}
+            <div className="preview-scaler">
+              <Preview ref={previewRef} settings={settings} />
+            </div>
           </div>
 
           <Controls previewRef={previewRef} fileName={settings.title || 'social-post'} />

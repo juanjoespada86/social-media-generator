@@ -61,3 +61,100 @@ button {
   font-family: inherit;
   cursor: pointer;
 }
+
+/* --- Responsive Layout --- */
+
+.app-container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: radial-gradient(circle at 50% 0%, #232b33 0%, var(--bg-page) 80%);
+}
+
+.app-header {
+  padding: 20px 40px;
+  border-bottom: 1px solid var(--border-color);
+  background: rgba(21, 26, 31, 0.8);
+  backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.app-main {
+  flex: 1;
+  padding: 40px;
+  max-width: 1600px;
+  margin: 0 auto;
+  width: 100%;
+  display: grid;
+  grid-template-columns: minmax(400px, 1fr) 1.5fr;
+  /* Editor | Preview */
+  gap: 60px;
+  align-items: start;
+}
+
+.preview-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 30px;
+  position: sticky;
+  top: 120px;
+}
+
+.preview-card {
+  padding: 40px;
+  background: var(--bg-card);
+  border-radius: var(--border-radius);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-lg);
+  /* Ensure it doesn't overflow horizontally on small screens */
+  max-width: 100%;
+  overflow: hidden;
+}
+
+/* Mobile / Tablet Breakpoint */
+@media (max-width: 1024px) {
+  .app-header {
+    padding: 15px 20px;
+  }
+
+  .app-main {
+    display: flex;
+    flex-direction: column-reverse;
+    /* Put Preview on top or bottom? Use Column usually means Preview details might be below. Let's stick to column. Top-down: Editor then Preview? Or Preview then Editor? Usually Editor is first on desktop. On mobile, users might want to see preview as they edit, but they can't see both. Let's stack them normally: Editor top, Preview bottom. */
+    flex-direction: column;
+    gap: 40px;
+    padding: 20px;
+  }
+
+  .preview-section {
+    position: static;
+    /* No longer sticky on mobile */
+    width: 100%;
+  }
+
+  .preview-card {
+    padding: 20px;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .app-header h1 {
+    font-size: 18px;
+  }
+
+  /* Scale down preview if needed or let it scroll */
+  .preview-scaler {
+    transform-origin: top center;
+    transform: scale(0.85);
+    /* Slight shrink for very small phones */
+  }
+}
