@@ -17,13 +17,13 @@ PARÁMETROS PARA LOS TEXTOS:
 
 CREATIVIDAD 1:
 Titular:
-Fuente: Roboto; Peso: Bold; Color: Blanco; Tamaño: Adaptado a la extensión del texto; alineación: justificada; disposición: crece desde abajo.
+Fuente: Roboto; Peso: Bold; Color: Blanco; Tamaño: Adaptado a la extensión del texto; alineación: izquierda; disposición: crece desde abajo.
 El titular debe de estar pegado al elemento EXN que hay por delante, con un ligero margen
 
 CREATIVIDAD 2
 PÁGINA 1:
 Titular:
-Fuente: Roboto; Peso: Bold; Color: Blanco; Tamaño: Adaptado a la extensión del texto; alineación: justificada; disposición: crece desde abajo hacia arriba
+Fuente: Roboto; Peso: Bold; Color: Blanco; Tamaño: Adaptado a la extensión del texto; alineación: izquierda; disposición: crece desde abajo hacia arriba
 El titular debe de estar pegado al elemento EXN que hay por delante, con un ligero margen
 
 

@@ -76,7 +76,7 @@ const Preview = forwardRef(({ settings }, ref) => {
                         fontSize: '32px',
                         color: 'white',
                         fontWeight: 700, // Bold
-                        textAlign: 'justify', // Justified text
+                        textAlign: 'left', // Left aligned
                         textShadow: '0 2px 4px rgba(0,0,0,0.5)',
                         lineHeight: 1.2,
                         width: '100%'
@@ -117,7 +117,7 @@ const Preview = forwardRef(({ settings }, ref) => {
                         fontWeight: 700,
                         lineHeight: 1.2,
                         color: 'white',
-                        textAlign: 'justify',
+                        textAlign: 'left', // Left aligned
                         textShadow: '0 2px 10px rgba(0,0,0,0.3)',
                         width: '100%'
                     }}>
