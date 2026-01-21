@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 const sectionStyle = {
     marginBottom: '24px'
@@ -45,14 +45,52 @@ export default function Editor({
     settings,
     updateSettings
 }) {
-    const handleImageChange = (e) => {
-        const file = e.target.files[0];
-        if (file) {
+    const [isProcessing, setIsProcessing] = useState(false);
+
+    // Resize image to max 1080px width (sufficient for 800x1000 render) to prevent mobile crash
+    const resizeImage = (file) => {
+        return new Promise((resolve) => {
             const reader = new FileReader();
-            reader.onloadend = () => {
-                updateSettings('image', reader.result);
+            reader.onload = (e) => {
+                const img = new Image();
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    let width = img.width;
+                    let height = img.height;
+                    const MAX_WIDTH = 1080;
+
+                    if (width > MAX_WIDTH) {
+                        height = Math.round((height * MAX_WIDTH) / width);
+                        width = MAX_WIDTH;
+                    }
+
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+
+                    // Compress slightly to save memory
+                    resolve(canvas.toDataURL('image/jpeg', 0.9));
+                };
+                img.src = e.target.result;
             };
             reader.readAsDataURL(file);
+        });
+    };
+
+    const handleImageChange = async (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            setIsProcessing(true);
+            try {
+                const resizedDataUrl = await resizeImage(file);
+                updateSettings('image', resizedDataUrl);
+            } catch (err) {
+                console.error("Error resizing image", err);
+                alert("Error processing image. Try a smaller file.");
+            } finally {
+                setIsProcessing(false);
+            }
         }
     };
 
@@ -115,21 +153,23 @@ export default function Editor({
                         type="file"
                         accept="image/*"
                         onChange={handleImageChange}
+                        disabled={isProcessing}
                         style={{
                             ...inputStyle,
                             padding: '12px',
                             fileSelectorButton: {
                                 marginRight: '20px',
                                 border: 'none',
-                                background: 'var(--accent-color)',
+                                background: isProcessing ? '#666' : 'var(--accent-color)',
                                 padding: '10px 20px',
                                 borderRadius: '4px',
                                 color: 'white',
-                                cursor: 'pointer'
+                                cursor: isProcessing ? 'wait' : 'pointer'
                             }
                         }}
                     />
                 </div>
+                {isProcessing && <p style={{ color: 'var(--accent-color)', fontSize: '12px', marginTop: '5px' }}>Optimizing image...</p>}
                 <p style={{ marginTop: '10px', fontSize: '12px', color: 'var(--text-muted)' }}>
                     Supported: JPG, PNG. Image will replace the background.
                 </p>
