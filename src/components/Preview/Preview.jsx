@@ -1,4 +1,4 @@
-import React, { forwardRef, useImperativeHandle, useRef } from 'react';
+import React, { forwardRef, useImperativeHandle, useRef, useState, useEffect } from 'react';
 
 // Common style for a 4:5 slide
 const slideStyle = {
@@ -40,6 +40,42 @@ const Preview = forwardRef(({ settings }, ref) => {
     const slide1Ref = useRef(null);
     const slide2Ref = useRef(null);
 
+    // State to hold Base64 strings of assets
+    const [assets, setAssets] = useState({
+        simple: null,
+        double1: null,
+        double2: null
+    });
+
+    // Pre-load assets as Base64 on mount to ensure mobile export works
+    useEffect(() => {
+        const loadAsset = async (path) => {
+            try {
+                const response = await fetch(path);
+                const blob = await response.blob();
+                return new Promise((resolve) => {
+                    const reader = new FileReader();
+                    reader.onloadend = () => resolve(reader.result);
+                    reader.readAsDataURL(blob);
+                });
+            } catch (err) {
+                console.error("Failed to load asset:", path, err);
+                return path; // Fallback to path if conversion fails
+            }
+        };
+
+        const loadAll = async () => {
+            const [simple, double1, double2] = await Promise.all([
+                loadAsset('/template_simple.png'),
+                loadAsset('/template_double_1.png'),
+                loadAsset('/template_double_2.png')
+            ]);
+            setAssets({ simple, double1, double2 });
+        };
+
+        loadAll();
+    }, []);
+
     useImperativeHandle(ref, () => ({
         get simple() { return simpleRef.current; },
         get slide1() { return slide1Ref.current; },
@@ -47,8 +83,6 @@ const Preview = forwardRef(({ settings }, ref) => {
     }));
 
     // Template 1: CREATIVIDAD 1
-    // Structure: Bg Image -> Overlay (Gradient/Logo) -> Title Text
-    // Rules: Roboto Bold, White, Justified, Grows from bottom usually above EXN element.
     const renderSimple = () => (
         <div ref={simpleRef} style={slideStyle}>
             {/* Layer 1: User Image (Background) */}
@@ -58,25 +92,26 @@ const Preview = forwardRef(({ settings }, ref) => {
                 ) : <div style={{ width: '100%', height: '100%', background: '#eee' }} />}
             </div>
 
-            {/* Layer 2: Template Overlay (Gradient + Logo + Static Text) */}
-            <img src="/template_simple.png" style={overlayStyle} alt="" crossOrigin="anonymous" />
+            {/* Layer 2: Template Overlay (Base64) */}
+            {assets.simple && (
+                <img src={assets.simple} style={overlayStyle} alt="" crossOrigin="anonymous" />
+            )}
 
             {/* Layer 3: Dynamic Text */}
-            {/* "crece desde abajo, casi pegado al elemento EXN" */}
             <div style={textLayerStyle}>
-                <div style={{ flex: 1 }}></div> {/* Spacer to push text down */}
+                <div style={{ flex: 1 }}></div>
                 <div style={{
-                    padding: '0 40px 105px 40px', // Adjusted to ~105px to be "pegado" to EXN with margin
+                    padding: '0 40px 105px 40px',
                     display: 'flex',
-                    justifyContent: 'flex-start', // Box alignment
-                    alignItems: 'flex-end', // Grows from bottom
+                    justifyContent: 'flex-start',
+                    alignItems: 'flex-end',
                     height: '100%',
                 }}>
                     <h1 style={{
                         fontSize: '32px',
                         color: 'white',
-                        fontWeight: 700, // Bold
-                        textAlign: 'left', // Left aligned
+                        fontWeight: 700,
+                        textAlign: 'left',
                         textShadow: '0 2px 4px rgba(0,0,0,0.5)',
                         lineHeight: 1.2,
                         width: '100%'
@@ -89,7 +124,6 @@ const Preview = forwardRef(({ settings }, ref) => {
     );
 
     // Template 2 Slide 1
-    // "comportarse exactamente igual que CREATIVIDAD 1"
     const renderSlide1 = () => (
         <div ref={slide1Ref} style={slideStyle}>
             {/* Background */}
@@ -100,13 +134,15 @@ const Preview = forwardRef(({ settings }, ref) => {
             </div>
 
             {/* Overlay */}
-            <img src="/template_double_1.png" style={overlayStyle} alt="" crossOrigin="anonymous" />
+            {assets.double1 && (
+                <img src={assets.double1} style={overlayStyle} alt="" crossOrigin="anonymous" />
+            )}
 
-            {/* Text - Same logic as Simple */}
+            {/* Text */}
             <div style={textLayerStyle}>
                 <div style={{ flex: 1 }}></div>
                 <div style={{
-                    padding: '0 40px 105px 40px', // Matching margin for consistency
+                    padding: '0 40px 105px 40px',
                     display: 'flex',
                     justifyContent: 'flex-start',
                     alignItems: 'flex-end',
@@ -117,7 +153,7 @@ const Preview = forwardRef(({ settings }, ref) => {
                         fontWeight: 700,
                         lineHeight: 1.2,
                         color: 'white',
-                        textAlign: 'left', // Left aligned
+                        textAlign: 'left',
                         textShadow: '0 2px 10px rgba(0,0,0,0.3)',
                         width: '100%'
                     }}>
@@ -129,7 +165,6 @@ const Preview = forwardRef(({ settings }, ref) => {
     );
 
     // Template 2 Slide 2
-    // Rules: Description only. Bold, White, left aligned, Centered container (vertically/horizontally).
     const renderSlide2 = () => (
         <div ref={slide2Ref} style={slideStyle}>
             {/* Background */}
@@ -140,19 +175,20 @@ const Preview = forwardRef(({ settings }, ref) => {
             </div>
 
             {/* Overlay */}
-            <img src="/template_double_2.png" style={overlayStyle} alt="" crossOrigin="anonymous" />
+            {assets.double2 && (
+                <img src={assets.double2} style={overlayStyle} alt="" crossOrigin="anonymous" />
+            )}
 
             {/* Text */}
             <div style={{ ...textLayerStyle, padding: '40px', justifyContent: 'center', alignItems: 'center' }}>
                 <div style={{
                     width: '100%',
-                    textAlign: 'left', // "alineación: izquierda"
-                    // padding removed to let text fill the allowable area if needed, or kept small
+                    textAlign: 'left',
                     padding: '10px',
                 }}>
                     <p style={{
                         fontSize: '20px',
-                        fontWeight: 700, // Bold
+                        fontWeight: 700,
                         whiteSpace: 'pre-wrap',
                         lineHeight: 1.5,
                         color: 'white',
@@ -169,7 +205,9 @@ const Preview = forwardRef(({ settings }, ref) => {
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '40px' }}>
             <h2>Preview</h2>
 
-            {settings.format === 'simple' ? (
+            {!assets.simple ? (
+                <div style={{ padding: '20px', color: '#666' }}>Loading assets...</div>
+            ) : settings.format === 'simple' ? (
                 renderSimple()
             ) : (
                 <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap', justifyContent: 'center' }}>
