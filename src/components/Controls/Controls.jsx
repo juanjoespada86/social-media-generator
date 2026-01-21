@@ -13,10 +13,29 @@ export default function Controls({ previewRef, fileName }) {
         try {
             const downloadNode = async (node, suffix) => {
                 if (!node) return;
+
+                // Settings to ensure correct export even if scaled on mobile
+                const options = {
+                    cacheBust: true,
+                    pixelRatio: 2, // 800x1000px output
+                    width: 400,
+                    height: 500,
+                    style: {
+                        transform: 'none', // Reset any CSS scaling
+                        margin: '0',
+                        display: 'flex' // Ensure proper layout
+                    }
+                };
+
                 try {
-                    const dataUrl = await toPng(node, { cacheBust: true, pixelRatio: 2 });
+                    // Small delay for images to ready
+                    await new Promise(r => setTimeout(r, 100));
+
+                    const dataUrl = await toPng(node, options);
+
                     const link = document.createElement('a');
-                    link.download = `${fileName.replace(/\s+/g, '_') || 'post'}${suffix}.png`;
+                    const cleanName = (fileName || 'social-post').replace(/\s+/g, '_');
+                    link.download = `${cleanName}${suffix}.png`;
                     link.href = dataUrl;
                     link.click();
                 } catch (e) {
@@ -30,7 +49,8 @@ export default function Controls({ previewRef, fileName }) {
                 console.log("Downloading Slide 1...");
                 if (refs.slide1) await downloadNode(refs.slide1, '_slide1');
 
-                await new Promise(r => setTimeout(r, 1500));
+                // Increased delay between slides for mobile browsers
+                await new Promise(r => setTimeout(r, 2000));
 
                 if (refs.slide2) {
                     console.log("Downloading Slide 2...");
