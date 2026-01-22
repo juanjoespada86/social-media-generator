@@ -128,7 +128,7 @@ const Preview = forwardRef(({ settings }, ref) => {
         <div id="preview-container" style={{ display: 'flex', gap: '20px', flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center' }}>
             {/* Slide 1  */}
             <div style={slideStyle}>
-                {image && <img src={URL.createObjectURL(image)} style={bgStyle} alt="bg" />}
+                {image && <img src={image} style={bgStyle} alt="bg" />}
                 <img
                     src={currentOverlay}
                     style={overlayStyle}
