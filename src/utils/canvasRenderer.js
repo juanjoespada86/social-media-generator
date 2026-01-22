@@ -1,3 +1,9 @@
+// Cache for assets to prevent reloading on every draw
+const assetCache = {
+    fontsLoaded: false,
+    images: {}
+};
+
 export const drawGenericPost = async (config) => {
     const {
         templateAsset,
@@ -7,16 +13,19 @@ export const drawGenericPost = async (config) => {
         canvasHeight = 750
     } = config;
 
-    // Ensure fonts are loaded
-    try {
-        await document.fonts.ready;
-        await Promise.all([
-            document.fonts.load('bold 48px Roboto'),
-            document.fonts.load('bold 30px Roboto')
-        ]);
-        await new Promise(r => setTimeout(r, 50));
-    } catch (e) {
-        console.warn('Font load check warning:', e);
+    // 1. Initialize Fonts (Once)
+    if (!assetCache.fontsLoaded) {
+        try {
+            await document.fonts.ready;
+            await Promise.all([
+                document.fonts.load('bold 48px Roboto'),
+                document.fonts.load('bold 30px Roboto')
+            ]);
+            await new Promise(r => setTimeout(r, 50));
+            assetCache.fontsLoaded = true;
+        } catch (e) {
+            console.warn('Font load check warning:', e);
+        }
     }
 
     const canvas = document.createElement('canvas');
@@ -28,38 +37,58 @@ export const drawGenericPost = async (config) => {
     ctx.fillStyle = '#ffffff';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // 1. Background Image
-    if (bgImage) {
+    // Helper to load images with caching
+    const loadImage = async (src) => {
+        if (!src) return null;
+
+        // Don't cache blobs (user uploads) aggressively as they are ephemeral
+        if (src.startsWith('blob:')) {
+            const img = new Image();
+            img.crossOrigin = "anonymous";
+            img.src = src;
+            return new Promise(resolve => {
+                img.onload = () => resolve(img);
+                img.onerror = () => resolve(null);
+            });
+        }
+
+        if (assetCache.images[src]) return assetCache.images[src];
+
         const img = new Image();
         img.crossOrigin = "anonymous";
-        img.src = bgImage;
-        await new Promise((resolve) => {
-            img.onload = resolve;
-            img.onerror = () => { console.error("BG Image fail"); resolve(); };
+        img.src = src;
+        const loadedImg = await new Promise(resolve => {
+            img.onload = () => resolve(img);
+            img.onerror = () => resolve(null);
         });
 
-        const scale = Math.max(canvas.width / img.width, canvas.height / img.height);
-        const x = (canvas.width - img.width * scale) / 2;
-        const y = (canvas.height - img.height * scale) / 2;
-        ctx.drawImage(img, x, y, img.width * scale, img.height * scale);
+        if (loadedImg) assetCache.images[src] = loadedImg;
+        return loadedImg;
+    };
+
+    // 2. Background Image
+    if (bgImage) {
+        const img = await loadImage(bgImage);
+        if (img) {
+            const scale = Math.max(canvas.width / img.width, canvas.height / img.height);
+            const x = (canvas.width - img.width * scale) / 2;
+            const y = (canvas.height - img.height * scale) / 2;
+            ctx.drawImage(img, x, y, img.width * scale, img.height * scale);
+        }
     } else {
         ctx.fillStyle = '#eee';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
     }
 
-    // 2. Template Overlay
+    // 3. Template Overlay
     if (templateAsset) {
-        const overlay = new Image();
-        overlay.crossOrigin = "anonymous";
-        overlay.src = templateAsset;
-        await new Promise((resolve) => {
-            overlay.onload = resolve;
-            overlay.onerror = () => resolve();
-        });
-        ctx.drawImage(overlay, 0, 0, canvas.width, canvas.height);
+        const overlay = await loadImage(templateAsset);
+        if (overlay) {
+            ctx.drawImage(overlay, 0, 0, canvas.width, canvas.height);
+        }
     }
 
-    // 3. Text
+    // 4. Text
     ctx.fillStyle = 'white';
     ctx.shadowColor = 'rgba(0,0,0,0.6)';
     ctx.shadowBlur = 8;
