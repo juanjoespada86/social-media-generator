@@ -5,37 +5,64 @@ export default function Controls({ previewRef, fileName }) {
 
     const handleExport = async () => {
         if (!previewRef.current) return;
-
         setIsExporting(true);
 
         try {
             const results = await previewRef.current.generateImages();
-            for (const { dataUrl, suffix } of results) {
-                // Convert DataURL to Blob for better iOS support
-                const response = await fetch(dataUrl);
-                const blob = await response.blob();
-                const url = URL.createObjectURL(blob);
 
-                const link = document.createElement('a');
-                link.download = `${fileName}_${suffix}.png`;
-                link.href = url;
-                document.body.appendChild(link);
-                link.click();
+            // Convert DataURLs to File objects
+            const files = await Promise.all(results.map(async ({ dataUrl, suffix }) => {
+                const res = await fetch(dataUrl);
+                const blob = await res.blob();
+                return new File([blob], `${fileName}_${suffix}.png`, { type: 'image/png' });
+            }));
 
-                // Cleanup
-                setTimeout(() => {
-                    document.body.removeChild(link);
-                    URL.revokeObjectURL(url);
-                }, 100);
-
-                // Safari needs a bigger gap between downloads to avoid blocking
-                await new Promise(r => setTimeout(r, 800));
+            // Try Native Share (iOS/Android)
+            if (navigator.canShare && navigator.canShare({ files })) {
+                try {
+                    await navigator.share({
+                        files,
+                        title: 'Creatividades Social Media',
+                        text: 'Aquí tienes tus creatividades generadas.'
+                    });
+                } catch (shareErr) {
+                    // Ignore user cancellation (AbortError)
+                    if (shareErr.name !== 'AbortError') {
+                        console.error('Proceso compartir falló:', shareErr);
+                        // Fallback purely for technical errors, not user caprice
+                        await downloadFiles(files);
+                    }
+                }
+            } else {
+                // Fallback for Desktop or unsupported browsers
+                await downloadFiles(files);
             }
+
         } catch (err) {
             console.error('Export failed:', err);
             alert('Error exportando imagen. Intenta de nuevo.');
         } finally {
             setIsExporting(false);
+        }
+    };
+
+    const downloadFiles = async (files) => {
+        for (const file of files) {
+            const url = URL.createObjectURL(file);
+            const link = document.createElement('a');
+            link.download = file.name;
+            link.href = url;
+            document.body.appendChild(link);
+            link.click();
+
+            // Cleanup
+            setTimeout(() => {
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url);
+            }, 100);
+
+            // Delay to prevent browser blocking multiple downloads
+            await new Promise(r => setTimeout(r, 800));
         }
     };
 
@@ -65,7 +92,7 @@ export default function Controls({ previewRef, fileName }) {
                     cursor: isExporting ? 'wait' : 'pointer'
                 }}
             >
-                {isExporting ? 'PROCESANDO...' : 'DESCARGAR CREATIVIDADES V2'}
+                {isExporting ? 'PROCESANDO...' : 'COMPARTIR / DESCARGAR'}
             </button>
         </div>
     );
