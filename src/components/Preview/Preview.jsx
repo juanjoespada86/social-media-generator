@@ -114,7 +114,7 @@ const Preview = forwardRef(({ settings }, ref) => {
 
             return results;
         }
-    }));
+    }), [settings]);
 
     return (
         <div id="preview-container" style={{ display: 'flex', gap: '20px', flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center' }}>
