@@ -133,7 +133,7 @@ const Preview = forwardRef(({ settings }, ref) => {
                     crossOrigin="anonymous"
                 />
                 <div style={textLayerStyle}>
-                    {title ? (
+                    {title && title.trim() ? (
                         <h2 style={{
                             position: 'absolute',
                             bottom: (format === 'breaking_exn' || format === 'breaking_exd') ? '110px' : '140px',
