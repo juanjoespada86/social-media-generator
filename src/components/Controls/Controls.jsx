@@ -11,8 +11,9 @@ export default function Controls({ previewRef, fileName }) {
         setIsDownloading(true);
 
         try {
-            const downloadNode = async (node, suffix) => {
-                if (!node) return;
+            // Helper to generate a File object from a DOM node
+            const generateFile = async (node, suffix) => {
+                if (!node) return null;
 
                 try {
                     // Slight delay to ensure DOM stability
@@ -20,78 +21,95 @@ export default function Controls({ previewRef, fileName }) {
 
                     const canvas = await html2canvas(node, {
                         useCORS: true,
-                        allowTaint: true, // Allow cross-origin images if CORS is set
-                        scale: 1.5, // Reduced from 2 to save RAM on iOS
+                        allowTaint: true,
+                        scale: 1.5, // 1.5x is safe for iOS RAM
                         width: 400,
                         height: 500,
                         backgroundColor: null,
                         logging: false,
+                        letterRendering: 1, // Fix for text kerning issues
                         onclone: (clonedDoc, element) => {
                             element.style.transform = 'none';
                             element.style.margin = '0';
                             element.style.display = 'flex';
+                            // Ensure fonts rendering is standard
+                            element.style.fontVariantLigatures = 'no-common-ligatures';
                         }
                     });
 
-                    // Modern Export Strategy: Blob -> Share or ObjectURL
-                    canvas.toBlob(async (blob) => {
-                        if (!blob) throw new Error('Canvas blob generation failed');
-
-                        const safeFileName = `${(fileName || 'social-post').replace(/\s+/g, '_')}${suffix}.png`;
-                        const file = new File([blob], safeFileName, { type: 'image/png' });
-
-                        // Strategy 1: Mobile native share (Best for iOS)
-                        if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
-                            try {
-                                await navigator.share({
-                                    files: [file],
-                                    title: 'Post Generated',
-                                    text: 'Here is your new social media post!'
-                                });
-                                return; // Success, exit
-                            } catch (shareError) {
-                                console.warn('Share API failed, falling back to download', shareError);
-                                // Fallback if user cancelled share or it failed
+                    return new Promise((resolve) => {
+                        canvas.toBlob((blob) => {
+                            if (!blob) {
+                                console.error('Blob generation failed for', suffix);
+                                resolve(null);
+                                return;
                             }
-                        }
-
-                        // Strategy 2: URL.createObjectURL (Better than Data URI for Safari)
-                        const url = URL.createObjectURL(blob);
-                        const link = document.createElement('a');
-                        link.download = safeFileName;
-                        link.href = url;
-                        document.body.appendChild(link);
-                        link.click();
-                        document.body.removeChild(link);
-
-                        // Cleanup
-                        setTimeout(() => URL.revokeObjectURL(url), 1000); // Wait a bit for iOS
-
-                    }, 'image/png');
-
+                            const safeFileName = `${(fileName || 'social-post').replace(/\s+/g, '_')}${suffix}.png`;
+                            const file = new File([blob], safeFileName, { type: 'image/png' });
+                            resolve(file);
+                        }, 'image/png');
+                    });
                 } catch (e) {
-                    console.error(`Failed to download ${suffix}`, e);
+                    console.error(`Failed to generate file for ${suffix}`, e);
+                    return null;
                 }
             };
 
-            if (refs.simple) {
-                await downloadNode(refs.simple, '');
-            } else {
-                console.log("Downloading Slide 1...");
-                if (refs.slide1) await downloadNode(refs.slide1, '_slide1');
+            // 1. Generate all files needed
+            const filesToShare = [];
 
-                // Delay between slides to prevent race conditions on mobile
-                await new Promise(r => setTimeout(r, 2000));
+            if (refs.simple) {
+                const f = await generateFile(refs.simple, '');
+                if (f) filesToShare.push(f);
+            } else {
+                console.log("Generating Slide 1...");
+                const f1 = await generateFile(refs.slide1, '_slide1');
+                if (f1) filesToShare.push(f1);
+
+                // Short delay between generations to let GC run
+                await new Promise(r => setTimeout(r, 500));
 
                 if (refs.slide2) {
-                    console.log("Downloading Slide 2...");
-                    await downloadNode(refs.slide2, '_slide2');
+                    console.log("Generating Slide 2...");
+                    const f2 = await generateFile(refs.slide2, '_slide2');
+                    if (f2) filesToShare.push(f2);
                 }
+            }
+
+            if (filesToShare.length === 0) throw new Error("No images generated");
+
+            // 2. Try Batch Sharing (Best for iOS)
+            if (navigator.share && navigator.canShare && navigator.canShare({ files: filesToShare })) {
+                try {
+                    await navigator.share({
+                        files: filesToShare,
+                        title: 'Social Posts',
+                        text: 'Here are your generated assets.'
+                    });
+                    console.log("Shared successfully");
+                    return;
+                } catch (shareError) {
+                    // User cancelled or failed
+                    console.warn('Share API cancelled or failed, falling back to download', shareError);
+                }
+            }
+
+            // 3. Fallback: Download Sequentially (Desktop/Android legacy)
+            for (const file of filesToShare) {
+                const url = URL.createObjectURL(file);
+                const link = document.createElement('a');
+                link.download = file.name;
+                link.href = url;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                await new Promise(r => setTimeout(r, 1000)); // Delay between downloads
+                URL.revokeObjectURL(url);
             }
 
         } catch (err) {
             console.error('Error:', err);
-            alert('Error generating images');
+            alert('Error processing images');
         } finally {
             setIsDownloading(false);
         }
