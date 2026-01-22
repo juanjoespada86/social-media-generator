@@ -2,15 +2,15 @@ import React, { forwardRef, useImperativeHandle, useRef, useState, useEffect } f
 
 // Common style for a 4:5 slide
 const slideStyle = {
-    width: '400px !important',
-    height: '500px !important',
-    minWidth: '400px !important',
-    minHeight: '500px !important',
+    width: '400px',
+    height: '500px',
+    minWidth: '400px',
+    minHeight: '500px',
     backgroundColor: 'white',
     position: 'relative',
     overflow: 'hidden',
     boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-    display: 'block', // Switching to block to be safer for capture
+    display: 'flex',
     flexDirection: 'column',
     flexShrink: 0
 };
@@ -28,11 +28,11 @@ const overlayStyle = {
 // Text on top of overlay
 const textLayerStyle = {
     position: 'absolute',
-    top: '0 !important',
-    left: '0 !important',
+    top: 0,
+    left: 0,
     zIndex: 20,
-    width: '400px !important',
-    height: '500px !important',
+    width: '400px',
+    height: '500px',
     textAlign: 'center',
     boxSizing: 'border-box'
 };

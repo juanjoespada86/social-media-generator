@@ -11,14 +11,25 @@ export default function Controls({ previewRef, fileName }) {
         try {
             const results = await previewRef.current.generateImages();
             for (const { dataUrl, suffix } of results) {
+                // Convert DataURL to Blob for better iOS support
+                const response = await fetch(dataUrl);
+                const blob = await response.blob();
+                const url = URL.createObjectURL(blob);
+
                 const link = document.createElement('a');
                 link.download = `${fileName}_${suffix}.png`;
-                link.href = dataUrl;
+                link.href = url;
                 document.body.appendChild(link);
                 link.click();
-                document.body.removeChild(link);
-                // Safari needs a tiny gap between downloads
-                await new Promise(r => setTimeout(r, 300));
+
+                // Cleanup
+                setTimeout(() => {
+                    document.body.removeChild(link);
+                    URL.revokeObjectURL(url);
+                }, 100);
+
+                // Safari needs a bigger gap between downloads to avoid blocking
+                await new Promise(r => setTimeout(r, 800));
             }
         } catch (err) {
             console.error('Export failed:', err);
