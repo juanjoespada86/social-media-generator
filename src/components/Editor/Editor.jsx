@@ -108,35 +108,30 @@ export default function Editor({
             {/* Format Selection */}
             <div style={sectionStyle}>
                 <label style={labelStyle}>Format</label>
-                <div style={{ display: 'flex', gap: '15px' }}>
-                    <label style={{
-                        ...radioLabelStyle,
-                        borderColor: settings.format === 'simple' ? 'var(--accent-color)' : 'var(--border-color)',
-                        background: settings.format === 'simple' ? 'rgba(72, 184, 172, 0.1)' : 'var(--bg-input)'
-                    }}>
-                        <input
-                            type="radio"
-                            name="format"
-                            value="simple"
-                            checked={settings.format === 'simple'}
-                            onChange={(e) => updateSettings('format', e.target.value)}
-                        />
-                        Format 1 (Single)
-                    </label>
-                    <label style={{
-                        ...radioLabelStyle,
-                        borderColor: settings.format === 'double' ? 'var(--accent-color)' : 'var(--border-color)',
-                        background: settings.format === 'double' ? 'rgba(72, 184, 172, 0.1)' : 'var(--bg-input)'
-                    }}>
-                        <input
-                            type="radio"
-                            name="format"
-                            value="double"
-                            checked={settings.format === 'double'}
-                            onChange={(e) => updateSettings('format', e.target.value)}
-                        />
-                        Format 2 (Double)
-                    </label>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+                    {[
+                        { id: 'simple', label: 'Simple (1 Slide)' },
+                        { id: 'double', label: 'Doble (2 Slides)' },
+                        { id: 'breaking_exn', label: 'Última Hora EXN' },
+                        { id: 'breaking_exd', label: 'Última Hora EXD' }
+                    ].map(option => (
+                        <label key={option.id} style={{
+                            ...radioLabelStyle,
+                            borderColor: settings.format === option.id ? 'var(--accent-color)' : 'var(--border-color)',
+                            background: settings.format === option.id ? 'rgba(72, 184, 172, 0.1)' : 'var(--bg-input)',
+                            justifyContent: 'center'
+                        }}>
+                            <input
+                                type="radio"
+                                name="format"
+                                value={option.id}
+                                checked={settings.format === option.id}
+                                onChange={(e) => updateSettings('format', e.target.value)}
+                                style={{ marginRight: '8px' }}
+                            />
+                            {option.label}
+                        </label>
+                    ))}
                 </div>
             </div>
 
