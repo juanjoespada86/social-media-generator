@@ -136,22 +136,24 @@ const Preview = forwardRef(({ settings }, ref) => {
                     crossOrigin="anonymous"
                 />
                 <div style={textLayerStyle}>
-                    {/* CSS approximation for visual feedback */}
-                    <h2 style={{
-                        position: 'absolute',
-                        bottom: '140px',
-                        left: '40px',
-                        width: '320px',
-                        color: 'white',
-                        fontFamily: 'Roboto',
-                        fontWeight: 'bold',
-                        fontSize: '32px', // scaled down from 48px
-                        textAlign: 'left',
-                        textShadow: '0 2px 4px rgba(0,0,0,0.5)',
-                        margin: 0
-                    }}>
-                        {title || 'Titular Previsualización'}
-                    </h2>
+                    {/* Only show if title is present, or show nothing/placeholder that doesn't obstruct */}
+                    {title ? (
+                        <h2 style={{
+                            position: 'absolute',
+                            bottom: '140px',
+                            left: '40px',
+                            width: '320px',
+                            color: 'white',
+                            fontFamily: 'Roboto',
+                            fontWeight: 'bold',
+                            fontSize: '32px',
+                            textAlign: 'left',
+                            textShadow: '0 2px 4px rgba(0,0,0,0.5)',
+                            margin: 0
+                        }}>
+                            {title}
+                        </h2>
+                    ) : null}
                 </div>
             </div>
 
@@ -161,21 +163,23 @@ const Preview = forwardRef(({ settings }, ref) => {
                     {image && <img src={image} style={bgStyle} alt="bg" />}
                     <img src={assets.double2} style={overlayStyle} alt="template" crossOrigin="anonymous" />
                     <div style={textLayerStyle}>
-                        <p style={{
-                            position: 'absolute',
-                            top: '50%',
-                            left: '40px',
-                            transform: 'translateY(-50%)',
-                            width: '320px',
-                            color: 'white',
-                            fontFamily: 'Roboto',
-                            fontWeight: 'bold',
-                            fontSize: '20px',
-                            textAlign: 'left',
-                            margin: 0
-                        }}>
-                            {body || 'Descripción...'}
-                        </p>
+                        {body ? (
+                            <p style={{
+                                position: 'absolute',
+                                top: '50%',
+                                left: '40px',
+                                transform: 'translateY(-50%)',
+                                width: '320px',
+                                color: 'white',
+                                fontFamily: 'Roboto',
+                                fontWeight: 'bold',
+                                fontSize: '20px',
+                                textAlign: 'left',
+                                margin: 0
+                            }}>
+                                {body}
+                            </p>
+                        ) : null}
                     </div>
                 </div>
             )}
