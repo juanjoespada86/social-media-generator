@@ -41,14 +41,17 @@ export const drawGenericPost = async (config) => {
     const loadImage = async (src) => {
         if (!src) return null;
 
-        // Don't cache blobs (user uploads) aggressively as they are ephemeral
-        if (src.startsWith('blob:')) {
+        // Don't cache blobs or data URLs (user uploads) aggressively as they are ephemeral/dynamic
+        if (src.startsWith('blob:') || src.startsWith('data:')) {
             const img = new Image();
             img.crossOrigin = "anonymous";
             img.src = src;
             return new Promise(resolve => {
                 img.onload = () => resolve(img);
-                img.onerror = () => resolve(null);
+                img.onerror = (e) => {
+                    console.warn("Failed to load user image", e);
+                    resolve(null);
+                };
             });
         }
 
