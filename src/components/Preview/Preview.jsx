@@ -61,7 +61,6 @@ const textLayerStyle = {
 const Preview = forwardRef(({ settings }, ref) => {
     const { format, image, title, body } = settings;
 
-    // Use specific assets later, for now mock
     const currentOverlay =
         format === 'simple' ? assets.simple :
             format === 'double' ? assets.double1 :
@@ -71,62 +70,54 @@ const Preview = forwardRef(({ settings }, ref) => {
     useImperativeHandle(ref, () => ({
         generateImages: async () => {
             const results = [];
-            const bg = image ? URL.createObjectURL(image) : null;
+            const bg = image;
 
             if (format === 'simple') {
-                // Template 1
                 const dataUrl = await drawGenericPost({
                     templateAsset: assets.simple,
                     bgImage: bg,
-                    textConfig: { title: title || 'Titular Aquí' }
+                    textConfig: { title: title || '' }
                 });
                 results.push({ dataUrl, suffix: 'simple' });
 
             } else if (format === 'double') {
-                // Template 2 - Slide 1
                 const dataUrl1 = await drawGenericPost({
                     templateAsset: assets.double1,
                     bgImage: bg,
-                    textConfig: { title: title || 'Titular Aquí' }
+                    textConfig: { title: title || '' }
                 });
                 results.push({ dataUrl: dataUrl1, suffix: 'pag1' });
 
-                // Template 2 - Slide 2
                 const dataUrl2 = await drawGenericPost({
                     templateAsset: assets.double2,
                     bgImage: bg,
-                    textConfig: { body: body || 'Descripción aquí...' }
+                    textConfig: { body: body || '' }
                 });
                 results.push({ dataUrl: dataUrl2, suffix: 'pag2' });
 
             } else if (format === 'breaking_exn') {
-                // Ultima Hora EXN
                 const dataUrl = await drawGenericPost({
                     templateAsset: assets.breaking_exn,
                     bgImage: bg,
-                    // Breaking news often has title lower? Using default for now but robust renderer handles defaults
-                    textConfig: { title: title || 'Última Hora EXN' }
+                    textConfig: { title: title || '' }
                 });
                 results.push({ dataUrl, suffix: 'exn' });
 
             } else if (format === 'breaking_exd') {
-                // Ultima Hora EXD
                 const dataUrl = await drawGenericPost({
                     templateAsset: assets.breaking_exd,
                     bgImage: bg,
-                    textConfig: { title: title || 'Última Hora EXD' }
+                    textConfig: { title: title || '' }
                 });
                 results.push({ dataUrl, suffix: 'exd' });
             }
 
-            if (bg) URL.revokeObjectURL(bg);
             return results;
         }
     }));
 
     return (
         <div id="preview-container" style={{ display: 'flex', gap: '20px', flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center' }}>
-            {/* Slide 1  */}
             <div style={slideStyle}>
                 {image && <img src={image} style={bgStyle} alt="bg" />}
                 <img
@@ -136,7 +127,6 @@ const Preview = forwardRef(({ settings }, ref) => {
                     crossOrigin="anonymous"
                 />
                 <div style={textLayerStyle}>
-                    {/* Only show if title is present, or show nothing/placeholder that doesn't obstruct */}
                     {title ? (
                         <h2 style={{
                             position: 'absolute',
@@ -157,7 +147,6 @@ const Preview = forwardRef(({ settings }, ref) => {
                 </div>
             </div>
 
-            {/* Slide 2 Preview (Only for Double) */}
             {format === 'double' && (
                 <div style={slideStyle}>
                     {image && <img src={image} style={bgStyle} alt="bg" />}
