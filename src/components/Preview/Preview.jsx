@@ -1,4 +1,4 @@
-import React, { forwardRef, useImperativeHandle } from 'react';
+import React, { forwardRef, useImperativeHandle, useMemo } from 'react';
 import { drawGenericPost } from '../../utils/canvasRenderer';
 
 // Assets mapping
@@ -24,7 +24,6 @@ const slideStyle = {
     flexShrink: 0
 };
 
-// Image fills the slide
 const bgStyle = {
     position: 'absolute',
     top: 0,
@@ -35,7 +34,6 @@ const bgStyle = {
     zIndex: 1
 };
 
-// Template overlay sits on top
 const overlayStyle = {
     position: 'absolute',
     top: 0,
@@ -46,7 +44,6 @@ const overlayStyle = {
     pointerEvents: 'none'
 };
 
-// Text on top of overlay
 const textLayerStyle = {
     position: 'absolute',
     top: 0,
@@ -61,11 +58,13 @@ const textLayerStyle = {
 const Preview = forwardRef(({ settings }, ref) => {
     const { format, image, title, body } = settings;
 
-    const currentOverlay =
-        format === 'simple' ? assets.simple :
-            format === 'double' ? assets.double1 :
-                format === 'breaking_exn' ? assets.breaking_exn :
-                    format === 'breaking_exd' ? assets.breaking_exd : assets.simple;
+    const currentOverlay = useMemo(() => {
+        if (format === 'simple') return assets.simple;
+        if (format === 'double') return assets.double1;
+        if (format === 'breaking_exn') return assets.breaking_exn;
+        if (format === 'breaking_exd') return assets.breaking_exd;
+        return assets.simple;
+    }, [format]);
 
     useImperativeHandle(ref, () => ({
         generateImages: async () => {
@@ -99,7 +98,10 @@ const Preview = forwardRef(({ settings }, ref) => {
                 const dataUrl = await drawGenericPost({
                     templateAsset: assets.breaking_exn,
                     bgImage: bg,
-                    textConfig: { title: title || '' }
+                    textConfig: {
+                        title: title || '',
+                        titleY: 590 // Adjust if needed for breaking
+                    }
                 });
                 results.push({ dataUrl, suffix: 'exn' });
 
@@ -107,7 +109,10 @@ const Preview = forwardRef(({ settings }, ref) => {
                 const dataUrl = await drawGenericPost({
                     templateAsset: assets.breaking_exd,
                     bgImage: bg,
-                    textConfig: { title: title || '' }
+                    textConfig: {
+                        title: title || '',
+                        titleY: 590
+                    }
                 });
                 results.push({ dataUrl, suffix: 'exd' });
             }
@@ -118,6 +123,7 @@ const Preview = forwardRef(({ settings }, ref) => {
 
     return (
         <div id="preview-container" style={{ display: 'flex', gap: '20px', flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center' }}>
+            {/* Slide 1 / Main View */}
             <div style={slideStyle}>
                 {image && <img src={image} style={bgStyle} alt="bg" />}
                 <img
@@ -130,7 +136,7 @@ const Preview = forwardRef(({ settings }, ref) => {
                     {title ? (
                         <h2 style={{
                             position: 'absolute',
-                            bottom: '140px',
+                            bottom: (format === 'breaking_exn' || format === 'breaking_exd') ? '110px' : '140px',
                             left: '40px',
                             width: '320px',
                             color: 'white',
@@ -139,7 +145,8 @@ const Preview = forwardRef(({ settings }, ref) => {
                             fontSize: '32px',
                             textAlign: 'left',
                             textShadow: '0 2px 4px rgba(0,0,0,0.5)',
-                            margin: 0
+                            margin: 0,
+                            lineHeight: '1.2'
                         }}>
                             {title}
                         </h2>
@@ -147,6 +154,7 @@ const Preview = forwardRef(({ settings }, ref) => {
                 </div>
             </div>
 
+            {/* Slide 2 Preview (Only for Double) */}
             {format === 'double' && (
                 <div style={slideStyle}>
                     {image && <img src={image} style={bgStyle} alt="bg" />}
@@ -164,7 +172,8 @@ const Preview = forwardRef(({ settings }, ref) => {
                                 fontWeight: 'bold',
                                 fontSize: '20px',
                                 textAlign: 'left',
-                                margin: 0
+                                margin: 0,
+                                lineHeight: '1.4'
                             }}>
                                 {body}
                             </p>
