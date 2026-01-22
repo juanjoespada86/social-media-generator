@@ -158,7 +158,7 @@ const Preview = forwardRef(({ settings }, ref) => {
             {/* Slide 2 Preview (Only for Double) */}
             {format === 'double' && (
                 <div style={slideStyle}>
-                    {image && <img src={URL.createObjectURL(image)} style={bgStyle} alt="bg" />}
+                    {image && <img src={image} style={bgStyle} alt="bg" />}
                     <img src={assets.double2} style={overlayStyle} alt="template" crossOrigin="anonymous" />
                     <div style={textLayerStyle}>
                         <p style={{
