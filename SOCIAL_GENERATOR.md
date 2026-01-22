@@ -31,3 +31,7 @@ PÁGINA 2
 Descripción:
 Fuente: Roboto; Peso: Bold; Color: Blanco; Tamaño: Adaptado a la extensión del texto; alineación: izquierda; disposición: centrada
 
+
+EJEMPLOS DE CADA TIPO DE CREATIVIDAD:
+Para el primer tipo de creatividad, puedes ver un ejemplo de cómo quedaría en: "EJEMPLO CREATIVIDAD 1.png"
+Para el segundo tipo de creatividad, puedes ver un ejemplo de cómo quedaría en: "EJEMPLO CREATIVIDAD 2_PAG1.png y EJEMPLO CREATIVIDAD 2_PAG2.png"  

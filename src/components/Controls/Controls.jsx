@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { toPng } from 'html-to-image';
+import html2canvas from 'html2canvas';
 
 export default function Controls({ previewRef, fileName }) {
     const [isDownloading, setIsDownloading] = useState(false);
@@ -14,30 +14,61 @@ export default function Controls({ previewRef, fileName }) {
             const downloadNode = async (node, suffix) => {
                 if (!node) return;
 
-                // Settings to ensure correct export even if scaled on mobile
-                const options = {
-                    cacheBust: false,
-                    pixelRatio: 2,
-                    width: 400,
-                    height: 500,
-                    style: {
-                        transform: 'none',
-                        margin: '0',
-                        display: 'flex'
-                    }
-                };
-
                 try {
-                    // Increased delay for images to handle mobile resource constraints
+                    // Slight delay to ensure DOM stability
                     await new Promise(r => setTimeout(r, 500));
 
-                    const dataUrl = await toPng(node, options);
+                    const canvas = await html2canvas(node, {
+                        useCORS: true,
+                        allowTaint: true, // Allow cross-origin images if CORS is set
+                        scale: 1.5, // Reduced from 2 to save RAM on iOS
+                        width: 400,
+                        height: 500,
+                        backgroundColor: null,
+                        logging: false,
+                        onclone: (clonedDoc, element) => {
+                            element.style.transform = 'none';
+                            element.style.margin = '0';
+                            element.style.display = 'flex';
+                        }
+                    });
 
-                    const link = document.createElement('a');
-                    const cleanName = (fileName || 'social-post').replace(/\s+/g, '_');
-                    link.download = `${cleanName}${suffix}.png`;
-                    link.href = dataUrl;
-                    link.click();
+                    // Modern Export Strategy: Blob -> Share or ObjectURL
+                    canvas.toBlob(async (blob) => {
+                        if (!blob) throw new Error('Canvas blob generation failed');
+
+                        const safeFileName = `${(fileName || 'social-post').replace(/\s+/g, '_')}${suffix}.png`;
+                        const file = new File([blob], safeFileName, { type: 'image/png' });
+
+                        // Strategy 1: Mobile native share (Best for iOS)
+                        if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+                            try {
+                                await navigator.share({
+                                    files: [file],
+                                    title: 'Post Generated',
+                                    text: 'Here is your new social media post!'
+                                });
+                                return; // Success, exit
+                            } catch (shareError) {
+                                console.warn('Share API failed, falling back to download', shareError);
+                                // Fallback if user cancelled share or it failed
+                            }
+                        }
+
+                        // Strategy 2: URL.createObjectURL (Better than Data URI for Safari)
+                        const url = URL.createObjectURL(blob);
+                        const link = document.createElement('a');
+                        link.download = safeFileName;
+                        link.href = url;
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+
+                        // Cleanup
+                        setTimeout(() => URL.revokeObjectURL(url), 1000); // Wait a bit for iOS
+
+                    }, 'image/png');
+
                 } catch (e) {
                     console.error(`Failed to download ${suffix}`, e);
                 }
@@ -49,8 +80,8 @@ export default function Controls({ previewRef, fileName }) {
                 console.log("Downloading Slide 1...");
                 if (refs.slide1) await downloadNode(refs.slide1, '_slide1');
 
-                // Generous delay between slides
-                await new Promise(r => setTimeout(r, 2500));
+                // Delay between slides to prevent race conditions on mobile
+                await new Promise(r => setTimeout(r, 2000));
 
                 if (refs.slide2) {
                     console.log("Downloading Slide 2...");
