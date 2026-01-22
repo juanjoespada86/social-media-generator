@@ -36,7 +36,10 @@ body {
   background-color: var(--bg-page);
   color: var(--text-main);
   -webkit-font-smoothing: antialiased;
+  -webkit-text-size-adjust: 100%; /* Fix for iOS Safari capture */
   min-height: 100vh;
+  overflow-wrap: break-word;
+  word-break: break-word;
 }
 
 /* Custom Scrollbar for dark theme */
