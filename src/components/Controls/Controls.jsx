@@ -10,11 +10,22 @@ export default function Controls({ previewRef, fileName }) {
         try {
             const results = await previewRef.current.generateImages();
 
-            // Convert DataURLs to File objects
+            // Sanitize filename to avoid weird issues on Android/iOS
+            const safeName = fileName.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+
+            // Convert DataURLs to File objects via Blob
             const files = await Promise.all(results.map(async ({ dataUrl, suffix }) => {
-                const res = await fetch(dataUrl);
-                const blob = await res.blob();
-                return new File([blob], `${fileName}_${suffix}.png`, { type: 'image/png' });
+                // Robust Base64 to Blob conversion
+                const [header, base64] = dataUrl.split(',');
+                const mime = header.match(/:(.*?);/)[1];
+                const bstr = atob(base64);
+                let n = bstr.length;
+                const u8arr = new Uint8Array(n);
+                while (n--) {
+                    u8arr[n] = bstr.charCodeAt(n);
+                }
+                const blob = new Blob([u8arr], { type: mime });
+                return new File([blob], `${safeName}_${suffix}.png`, { type: 'image/png' });
             }));
 
             // Try Native Share (iOS/Android)
@@ -26,15 +37,9 @@ export default function Controls({ previewRef, fileName }) {
                         text: 'Aquí tienes tus creatividades generadas.'
                     });
                 } catch (shareErr) {
-                    // Ignore user cancellation (AbortError)
-                    if (shareErr.name !== 'AbortError') {
-                        console.error('Proceso compartir falló:', shareErr);
-                        // Fallback purely for technical errors, not user caprice
-                        await downloadFiles(files);
-                    }
+                    if (shareErr.name !== 'AbortError') throw shareErr;
                 }
             } else {
-                // Fallback for Desktop or unsupported browsers
                 await downloadFiles(files);
             }
 
